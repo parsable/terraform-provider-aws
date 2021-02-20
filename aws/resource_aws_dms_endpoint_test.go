@@ -71,6 +71,9 @@ func TestAccAwsDmsEndpoint_S3(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.bucket_folder", ""),
 					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.bucket_name", "bucket_name"),
 					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.compression_type", "NONE"),
+					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.data_format", "csv"),
+					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.parquet_version", "parquet-1-0"),
+					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.parquet_timestamp_in_millisecond", "false"),
 				),
 			},
 			{
@@ -91,6 +94,9 @@ func TestAccAwsDmsEndpoint_S3(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.bucket_folder", "new-bucket_folder"),
 					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.bucket_name", "new-bucket_name"),
 					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.compression_type", "GZIP"),
+					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.data_format", "parquet"),
+					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.parquet_version", "parquet-2-0"),
+					resource.TestCheckResourceAttr(resourceName, "s3_settings.0.parquet_timestamp_in_millisecond", "true"),
 				),
 			},
 		},
@@ -951,13 +957,16 @@ resource "aws_dms_endpoint" "dms_endpoint" {
   }
 
   s3_settings {
-    service_access_role_arn   = aws_iam_role.iam_role.arn
-    external_table_definition = "new-external_table_definition"
-    csv_row_delimiter         = "\\r"
-    csv_delimiter             = "."
-    bucket_folder             = "new-bucket_folder"
-    bucket_name               = "new-bucket_name"
-    compression_type          = "GZIP"
+    data_format                      = "parquet"
+    bucket_folder                    = "new-bucket_folder"
+    bucket_name                      = "new-bucket_name"
+    compression_type                 = "GZIP"
+    csv_delimiter                    = "."
+    csv_row_delimiter                = "\\r"
+    external_table_definition        = "new-external_table_definition"
+    parquet_timestamp_in_millisecond = true
+    parquet_version                  = "parquet-2-0"
+    service_access_role_arn          = aws_iam_role.iam_role.arn
   }
 }
 
