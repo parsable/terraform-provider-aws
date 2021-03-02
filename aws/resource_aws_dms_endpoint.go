@@ -306,6 +306,36 @@ func resourceAwsDmsEndpoint() *schema.Resource {
 							Optional: true,
 							Default:  false,
 						},
+						"date_partition_sequence": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "YYYYMMDD",
+						},
+						"data_format": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "csv",
+						},
+						"parquet_timestamp_in_millisecond": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"parquet_version": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "parquet-1-0",
+						},
+						"timestamp_column_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "",
+						},
+						"cdc_path": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "",
+						},
 					},
 				},
 			},
@@ -396,14 +426,20 @@ func resourceAwsDmsEndpointCreate(d *schema.ResourceData, meta interface{}) erro
 		request.DatabaseName = aws.String(d.Get("database_name").(string))
 	case "s3":
 		request.S3Settings = &dms.S3Settings{
-			ServiceAccessRoleArn:    aws.String(d.Get("s3_settings.0.service_access_role_arn").(string)),
-			ExternalTableDefinition: aws.String(d.Get("s3_settings.0.external_table_definition").(string)),
-			CsvRowDelimiter:         aws.String(d.Get("s3_settings.0.csv_row_delimiter").(string)),
-			CsvDelimiter:            aws.String(d.Get("s3_settings.0.csv_delimiter").(string)),
-			BucketFolder:            aws.String(d.Get("s3_settings.0.bucket_folder").(string)),
-			BucketName:              aws.String(d.Get("s3_settings.0.bucket_name").(string)),
-			CompressionType:         aws.String(d.Get("s3_settings.0.compression_type").(string)),
-			DatePartitionEnabled:    aws.Bool(d.Get("s3_settings.0.date_partition_enabled").(bool)),
+			BucketFolder:                  aws.String(d.Get("s3_settings.0.bucket_folder").(string)),
+			BucketName:                    aws.String(d.Get("s3_settings.0.bucket_name").(string)),
+			CdcPath:                       aws.String(d.Get("s3_settings.0.cdc_path").(string)),
+			CompressionType:               aws.String(d.Get("s3_settings.0.compression_type").(string)),
+			CsvDelimiter:                  aws.String(d.Get("s3_settings.0.csv_delimiter").(string)),
+			CsvRowDelimiter:               aws.String(d.Get("s3_settings.0.csv_row_delimiter").(string)),
+			DataFormat:                    aws.String(d.Get("s3_settings.0.data_format").(string)),
+			DatePartitionEnabled:          aws.Bool(d.Get("s3_settings.0.date_partition_enabled").(bool)),
+			DatePartitionSequence:         aws.String(d.Get("s3_settings.0.date_partition_sequence").(string)),
+			ExternalTableDefinition:       aws.String(d.Get("s3_settings.0.external_table_definition").(string)),
+			ParquetTimestampInMillisecond: aws.Bool(d.Get("s3_settings.0.parquet_timestamp_in_millisecond").(bool)),
+			ParquetVersion:                aws.String(d.Get("s3_settings.0.parquet_version").(string)),
+			ServiceAccessRoleArn:          aws.String(d.Get("s3_settings.0.service_access_role_arn").(string)),
+			TimestampColumnName:           aws.String(d.Get("s3_settings.0.timestamp_column_name").(string)),
 		}
 	default:
 		request.Password = aws.String(d.Get("password").(string))
@@ -633,17 +669,36 @@ func resourceAwsDmsEndpointUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 	case "s3":
 		if d.HasChanges(
-			"s3_settings.0.service_access_role_arn", "s3_settings.0.external_table_definition",
-			"s3_settings.0.csv_row_delimiter", "s3_settings.0.csv_delimiter", "s3_settings.0.bucket_folder",
-			"s3_settings.0.bucket_name", "s3_settings.0.compression_type") {
+			"s3_settings.0.bucket_folder",
+			"s3_settings.0.bucket_name",
+			"s3_settings.0.cdc_path",
+			"s3_settings.0.compression_type",
+			"s3_settings.0.csv_delimiter",
+			"s3_settings.0.csv_row_delimiter",
+			"s3_settings.0.data_format",
+			"s3_settings.0.date_partition_enabled",
+			"s3_settings.0.date_partition_sequence",
+			"s3_settings.0.external_table_definition",
+			"s3_settings.0.parquet_timestamp_in_millisecond",
+			"s3_settings.0.parquet_version",
+			"s3_settings.0.service_access_role_arn",
+			"s3_settings.0.timestamp_column_name",
+		) {
 			request.S3Settings = &dms.S3Settings{
-				ServiceAccessRoleArn:    aws.String(d.Get("s3_settings.0.service_access_role_arn").(string)),
-				ExternalTableDefinition: aws.String(d.Get("s3_settings.0.external_table_definition").(string)),
-				CsvRowDelimiter:         aws.String(d.Get("s3_settings.0.csv_row_delimiter").(string)),
-				CsvDelimiter:            aws.String(d.Get("s3_settings.0.csv_delimiter").(string)),
-				BucketFolder:            aws.String(d.Get("s3_settings.0.bucket_folder").(string)),
-				BucketName:              aws.String(d.Get("s3_settings.0.bucket_name").(string)),
-				CompressionType:         aws.String(d.Get("s3_settings.0.compression_type").(string)),
+				BucketFolder:                  aws.String(d.Get("s3_settings.0.bucket_folder").(string)),
+				BucketName:                    aws.String(d.Get("s3_settings.0.bucket_name").(string)),
+				CdcPath:                       aws.String(d.Get("s3_settings.0.cdc_path").(string)),
+				CompressionType:               aws.String(d.Get("s3_settings.0.compression_type").(string)),
+				CsvDelimiter:                  aws.String(d.Get("s3_settings.0.csv_delimiter").(string)),
+				CsvRowDelimiter:               aws.String(d.Get("s3_settings.0.csv_row_delimiter").(string)),
+				DataFormat:                    aws.String(d.Get("s3_settings.0.data_format").(string)),
+				DatePartitionEnabled:          aws.Bool(d.Get("s3_settings.0.date_partition_enabled").(bool)),
+				DatePartitionSequence:         aws.String(d.Get("s3_settings.0.date_partition_sequence").(string)),
+				ExternalTableDefinition:       aws.String(d.Get("s3_settings.0.external_table_definition").(string)),
+				ParquetTimestampInMillisecond: aws.Bool(d.Get("s3_settings.0.parquet_timestamp_in_millisecond").(bool)),
+				ParquetVersion:                aws.String(d.Get("s3_settings.0.parquet_version").(string)),
+				ServiceAccessRoleArn:          aws.String(d.Get("s3_settings.0.service_access_role_arn").(string)),
+				TimestampColumnName:           aws.String(d.Get("s3_settings.0.timestamp_column_name").(string)),
 			}
 			request.EngineName = aws.String(d.Get("engine_name").(string)) // Must be included (should be 's3')
 			hasChanges = true
@@ -830,14 +885,20 @@ func flattenDmsS3Settings(settings *dms.S3Settings) []map[string]interface{} {
 	}
 
 	m := map[string]interface{}{
-		"service_access_role_arn":   aws.StringValue(settings.ServiceAccessRoleArn),
-		"external_table_definition": aws.StringValue(settings.ExternalTableDefinition),
-		"csv_row_delimiter":         aws.StringValue(settings.CsvRowDelimiter),
-		"csv_delimiter":             aws.StringValue(settings.CsvDelimiter),
-		"bucket_folder":             aws.StringValue(settings.BucketFolder),
-		"bucket_name":               aws.StringValue(settings.BucketName),
-		"compression_type":          aws.StringValue(settings.CompressionType),
-		"date_partition_enabled":    aws.BoolValue(settings.DatePartitionEnabled),
+		"bucket_folder":                    aws.StringValue(settings.BucketFolder),
+		"bucket_name":                      aws.StringValue(settings.BucketName),
+		"cdc_path":                         aws.StringValue(settings.CdcPath),
+		"compression_type":                 aws.StringValue(settings.CompressionType),
+		"csv_delimiter":                    aws.StringValue(settings.CsvDelimiter),
+		"csv_row_delimiter":                aws.StringValue(settings.CsvRowDelimiter),
+		"data_format":                      aws.StringValue(settings.DataFormat),
+		"date_partition_enabled":           aws.BoolValue(settings.DatePartitionEnabled),
+		"date_partition_sequence":          aws.StringValue(settings.DatePartitionSequence),
+		"external_table_definition":        aws.StringValue(settings.ExternalTableDefinition),
+		"parquet_timestamp_in_millisecond": aws.BoolValue(settings.ParquetTimestampInMillisecond),
+		"parquet_version":                  aws.StringValue(settings.ParquetVersion),
+		"service_access_role_arn":          aws.StringValue(settings.ServiceAccessRoleArn),
+		"timestamp_column_name":            aws.StringValue(settings.TimestampColumnName),
 	}
 
 	return []map[string]interface{}{m}

@@ -6,10 +6,21 @@ TEST_COUNT?=1
 ACCTEST_TIMEOUT?=120m
 ACCTEST_PARALLELISM?=20
 
+HOSTNAME=registry.terraform.io
+NAMESPACE=parsable
+NAME=aws
+BINARY=terraform-provider-${NAME}
+VERSION=1.0
+OS_ARCH=darwin_amd64
+
 default: build
 
 build: fmtcheck
 	go install
+
+install: build
+	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+	mv ${GOPATH}/bin/${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
 gen:
 	rm -f aws/internal/keyvaluetags/*_gen.go
