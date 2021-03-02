@@ -3,29 +3,20 @@ archives:
       - none*
     format: zip
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
-#before:
-#  hooks:
-#    - go mod download
-#builds:
-#  - binary: '{{ .ProjectName }}_{{ .Version }}'
-#    flags:
-#      - -trimpath
-#    goarch:
-#      - '386'
-#      - amd64
-#      - arm
-#      - arm64
-#    goos:
-#      - darwin
-#      - freebsd
-#      - linux
-#      - windows
-#    ignore:
-#      - goarch: '386'
-#        goos: darwin
-#    ldflags:
-#      - -s -w -X version.ProviderVersion={{.Version}}
-#    mod_timestamp: '{{ .CommitTimestamp }}'
+before:
+  hooks:
+    - go mod download
+builds:
+  - binary: '{{ .ProjectName }}_{{ .Version }}'
+    flags:
+      - -trimpath
+    goarch:
+      - amd64
+    goos:
+      - darwin
+    ldflags:
+      - -s -w -X version.ProviderVersion={{.Version}}
+    mod_timestamp: '{{ .CommitTimestamp }}'
 changelog:
   skip: true
 checksum:
