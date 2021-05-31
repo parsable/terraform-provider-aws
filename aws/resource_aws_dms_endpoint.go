@@ -156,6 +156,15 @@ func resourceAwsDmsEndpoint() *schema.Resource {
 							Optional: true,
 							Default:  "kafka-default-topic",
 						},
+						"message_format": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ValidateFunc: validation.StringInSlice([]string{
+								dms.MessageFormatValueJson,
+								dms.MessageFormatValueJsonUnformatted,
+							}, false),
+							Default: dms.MessageFormatValueJson,
+						},
 					},
 				},
 			},
@@ -392,8 +401,9 @@ func resourceAwsDmsEndpointCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	case "kafka":
 		request.KafkaSettings = &dms.KafkaSettings{
-			Broker: aws.String(d.Get("kafka_settings.0.broker").(string)),
-			Topic:  aws.String(d.Get("kafka_settings.0.topic").(string)),
+			Broker:        aws.String(d.Get("kafka_settings.0.broker").(string)),
+			Topic:         aws.String(d.Get("kafka_settings.0.topic").(string)),
+			MessageFormat: aws.String(d.Get("kafka_settings.0.message_format").(string)),
 		}
 	case "kinesis":
 		request.KinesisSettings = &dms.KinesisSettings{
@@ -614,10 +624,12 @@ func resourceAwsDmsEndpointUpdate(d *schema.ResourceData, meta interface{}) erro
 	case "kafka":
 		if d.HasChanges(
 			"kafka_settings.0.broker",
-			"kafka_settings.0.topic") {
+			"kafka_settings.0.topic",
+			"kafka_settings.0.message_format") {
 			request.KafkaSettings = &dms.KafkaSettings{
-				Broker: aws.String(d.Get("kafka_settings.0.broker").(string)),
-				Topic:  aws.String(d.Get("kafka_settings.0.topic").(string)),
+				Broker:        aws.String(d.Get("kafka_settings.0.broker").(string)),
+				Topic:         aws.String(d.Get("kafka_settings.0.topic").(string)),
+				MessageFormat: aws.String(d.Get("kafka_settings.0.message_format").(string)),
 			}
 			request.EngineName = aws.String(d.Get("engine_name").(string))
 			hasChanges = true
@@ -841,8 +853,9 @@ func flattenDmsKafkaSettings(settings *dms.KafkaSettings) []map[string]interface
 	}
 
 	m := map[string]interface{}{
-		"broker": aws.StringValue(settings.Broker),
-		"topic":  aws.StringValue(settings.Topic),
+		"broker":         aws.StringValue(settings.Broker),
+		"topic":          aws.StringValue(settings.Topic),
+		"message_format": aws.StringValue(settings.MessageFormat),
 	}
 
 	return []map[string]interface{}{m}
